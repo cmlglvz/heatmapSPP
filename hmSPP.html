@@ -166,22 +166,11 @@ pre code {
 
 <h1 class="title toc-ignore">hmSPP</h1>
 <h4 class="author">Camilo Gálvez A.</h4>
-<h4 class="date">05-11-2021</h4>
 
 </div>
 
 
-<pre class="r"><code>Shared &lt;- APwATs %&gt;% filter(Cha == 1 &amp; Fla == 1 &amp; Hu == 1 &amp; Pc == 1)
-ShaSeq &lt;- Shared[, 2]
-ShaASVs &lt;- select(oASVs, all_of(ShaSeq))
-ShaSPPs &lt;- Tax.sum(ShaASVs, xTXs, 10)
-ShaSPPs &lt;- ShaSPPs[, -17]
-hmSPP &lt;- heatmaply(normalize(ShaSPPs), 
-                      Colv = NA, 
-                      Rowv = NA, 
-                      seriate = &quot;none&quot;, 
-                      main = &quot;Shared ASVs across all sites as Species&quot;)
-saveWidget(hmSPP, file = &quot;D:/Documents/GitHub/Interactive/heatmapSPP/index.html&quot;)</code></pre>
+
 
 
 
