@@ -1,0 +1,58 @@
+---
+title: "hmSPP"
+author: "Camilo Gálvez A."
+date: "05-11-2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(viridis)
+library(plotly)
+library(heatmaply)
+library(htmlwidgets)
+```
+
+```{r dataframes, echo=FALSE, include=FALSE}
+APwATs <- read.csv2("https://raw.githubusercontent.com/cmlglvz/heatmapASV/master/Data/APwATs.csv", header = TRUE, sep = ";", dec = ".", skip = 0)
+rownames(APwATs) <- APwATs[, 1]
+oASVs <- read.csv2("https://raw.githubusercontent.com/cmlglvz/heatmapASV/master/Data/oASVs.csv", header = TRUE, sep = ";", dec = ".", skip = 0)
+rownames(oASVs) <- oASVs[, 1]
+oASVs <- oASVs[, -1]
+xTXs <- read.csv2("https://raw.githubusercontent.com/cmlglvz/heatmapSPP/master/Data/xTXs.csv", header = TRUE, sep = ";", dec = ".", skip = 0)
+rownames(xTXs) <- xTXs[, 1]
+xTXs <- xTXs[, -1]
+```
+
+```{r, echo=TRUE, message=TRUE, warning=TRUE, include=FALSE}
+Tax.sum <- function(OTU.Table, Tax.Table, Tax.lvl ){
+  z <- NULL
+  y <- NULL
+  for (i in 1:length(unique(Tax.Table[colnames(OTU.Table),Tax.lvl]))) {
+    if (length(OTU.Table[,which(Tax.Table[colnames(OTU.Table),Tax.lvl]==unique(Tax.Table[colnames(OTU.Table),Tax.lvl])[i])])!=length(rownames(OTU.Table))) {
+      z <- which(Tax.Table[colnames(OTU.Table),Tax.lvl]==unique(Tax.Table[colnames(OTU.Table),Tax.lvl])[i])
+      y <- cbind(y, apply(OTU.Table[,which(Tax.Table[colnames(OTU.Table),Tax.lvl]==unique(Tax.Table[colnames(OTU.Table),Tax.lvl])[i])], 1, function(x) sum(x)))
+    } else { 
+      y <- cbind(y, OTU.Table[,which(Tax.Table[colnames(OTU.Table),Tax.lvl]==unique(Tax.Table[colnames(OTU.Table),Tax.lvl])[i])])
+    }
+  }
+  colnames(y) <- unique(Tax.Table[colnames(OTU.Table),Tax.lvl])
+  invisible((y))
+}
+```
+
+```{r, echo=FALSE, include=FALSE}
+Shared <- APwATs %>% filter(Cha == 1 & Fla == 1 & Hu == 1 & Pc == 1)
+ShaSeq <- Shared[, 2]
+ShaASVs <- select(oASVs, all_of(ShaSeq))
+ShaSPPs <- Tax.sum(ShaASVs, xTXs, 10)
+ShaSPPs <- ShaSPPs[, -17]
+hmSPP <- heatmaply(normalize(ShaSPPs), 
+                      Colv = NA, 
+                      Rowv = NA, 
+                      seriate = "none", 
+                      main = "Shared ASVs across all sites as Species")
+saveWidget(hmSPP, file = "D:/Documents/GitHub/Interactive/heatmapSPP/index.html")
+```
+
