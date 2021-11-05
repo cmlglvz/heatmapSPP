@@ -1,7 +1,6 @@
 ---
 title: "hmSPP"
 author: "Camilo Gálvez A."
-date: "05-11-2021"
 output: html_document
 ---
 
