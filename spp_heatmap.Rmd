@@ -1,0 +1,62 @@
+---
+title: "spp_heatmap"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(viridis)
+library(plotly)
+library(heatmaply)
+library(htmlwidgets)
+library(knitr)
+library(kableExtra)
+```
+
+```{r function, echo=TRUE, include=TRUE}
+#Function developed by Benjamin Glasner
+Tax.sum <- function(OTU.Table, Tax.Table, Tax.lvl ){
+  z <- NULL
+  y <- NULL
+  for (i in 1:length(unique(Tax.Table[colnames(OTU.Table),Tax.lvl]))) {
+    if (length(OTU.Table[,which(Tax.Table[colnames(OTU.Table),Tax.lvl]==unique(Tax.Table[colnames(OTU.Table),Tax.lvl])[i])])!=length(rownames(OTU.Table))) {
+      z <- which(Tax.Table[colnames(OTU.Table),Tax.lvl]==unique(Tax.Table[colnames(OTU.Table),Tax.lvl])[i])
+      y <- cbind(y, apply(OTU.Table[,which(Tax.Table[colnames(OTU.Table),Tax.lvl]==unique(Tax.Table[colnames(OTU.Table),Tax.lvl])[i])], 1, function(x) sum(x)))
+    } else { 
+      y <- cbind(y, OTU.Table[,which(Tax.Table[colnames(OTU.Table),Tax.lvl]==unique(Tax.Table[colnames(OTU.Table),Tax.lvl])[i])])
+    }
+  }
+  colnames(y) <- unique(Tax.Table[colnames(OTU.Table),Tax.lvl])
+  invisible((y))
+}
+```
+
+```{r data, echo=FALSE, warning=TRUE, message=TRUE}
+APwATs <- read.csv2("https://raw.githubusercontent.com/cmlglvz/datasets/master/Data/eAnalisis/APwATs.csv")
+oASVs <- read.csv2("https://raw.githubusercontent.com/cmlglvz/datasets/master/Data/eAnalisis/oASVs.csv")
+rownames(oASVs) <- oASVs[, 1]
+oASVs <- oASVs[, -1]
+xTXs <- read.csv2("https://raw.githubusercontent.com/cmlglvz/datasets/master/Data/eAnalisis/xTXs.csv")
+rownames(xTXs) <- xTXs[, 2]
+xTXs <- xTXs[, -1]
+```
+
+```{r heatmap, echo=FALSE, warning=TRUE, message=TRUE}
+Shared <- APwATs %>% filter(Cha == 1 & Fla == 1 & Hu == 1 & Pc == 1)
+ShaSeq <- Shared[, 2]
+ShaASVs <- select(oASVs, all_of(ShaSeq))
+ShaSPPs <- Tax.sum(ShaASVs, xTXs, 10)
+ShaSPPs <- ShaSPPs[, -17]
+SPP.heatmap <- heatmaply(normalize(ShaSPPs), 
+                      Colv = NA, 
+                      Rowv = NA, 
+                      seriate = "none", 
+                      main = "Shared ASVs across all sites as Species")
+```
+
+```{r plot, echo=FALSE}
+SPP.heatmap
+saveWidget(SPP.heatmap, file = "/Users/Artemis/Documents/GitHub/heatmapSPP/index.html")
+```
+
